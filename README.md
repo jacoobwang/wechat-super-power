@@ -4,6 +4,8 @@
 
 当前阶段只完成项目初始化、需求收敛和实现方案设计，暂不包含业务代码。
 
+目前已实现第一个核心能力：搜索微信公众号文章列表。
+
 ## 目标
 
 这个 skill 的核心能力分为两部分：
@@ -25,15 +27,16 @@
 ├── references/
 │   └── implementation-plan.md
 └── scripts/
-    └── .gitkeep
+    ├── .gitkeep
+    ├── search_wechat.js
+    └── skill-entry.js
 ```
 
 ## 建议的后续开发顺序
 
-1. 先确认 `search_whatch.js` 的实际输入输出协议。
-2. 再实现统一的 skill 入口，负责参数解析和能力路由。
-3. 补上文章详情抓取与 Markdown 转换。
-4. 最后增加异常处理、输出规范和测试样例。
+1. 已接入搜索能力并统一输出结构。
+2. 接下来补上文章详情抓取与 Markdown 转换。
+3. 最后增加异常处理、输出规范和测试样例。
 
 ## 预期输入输出
 
@@ -52,6 +55,13 @@
 - 作者或公众号名
 - 发布时间
 - 原始链接
+
+命令行示例：
+
+```bash
+node scripts/skill-entry.js search "人工智能" --limit 5
+node scripts/search_wechat.js "人工智能" -n 5
+```
 
 ### 能力 2: 下载文章为 Markdown
 

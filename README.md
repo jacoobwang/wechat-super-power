@@ -1,11 +1,6 @@
 # Wechat Super Power
 
-一个面向 Codex/Codex Skills 的微信公众号文章处理 skill 项目骨架。
-
-当前阶段只完成项目初始化、需求收敛和实现方案设计，暂不包含业务代码。
-
-目前已实现第一个核心能力：搜索微信公众号文章列表。
-目前已实现第二个核心能力的基础版：输入文章链接并输出 Markdown。
+一个面向 OpenClaw Skills 的微信公众号文章处理 skill 项目。
 
 ## 目标
 

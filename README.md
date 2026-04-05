@@ -4,13 +4,16 @@
 
 ## 目标
 
-这个 skill 的核心能力分为两部分：
+这个 skill 的核心能力分为三部分：
 
 1. 搜索列表功能
 通过 `search_wechat.js` 执行搜索，返回文章列表。
 
 2. 下载文章内容
 输入文章链接，抓取正文并转换为 Markdown 返回。
+
+3. 按 topic 搭建本地知识库
+输入 topic，先搜索文章，再批量抓取为 Markdown，最后存入指定目录。
 
 ## 当前目录结构
 
@@ -24,6 +27,7 @@
 │   └── implementation-plan.md
 └── scripts/
     ├── .gitkeep
+    ├── build_wechat_knowledge_base.js
     ├── fetch_wechat_article.js
     ├── search_wechat.js
     └── skill-entry.js
@@ -63,6 +67,10 @@ cp -R /Users/link/App/wechat-super-power /your/workspace/.agents/skills/wechat-s
 https://mp.weixin.qq.com/...
 ```
 
+```text
+使用 $wechat-super-power 根据 topic“AI Agent”搭建知识库，搜索 5 篇文章并保存到 ./knowledge-base
+```
+
 说明：
 
 - 真正决定 skill 行为的是 `SKILL.md`
@@ -73,8 +81,9 @@ https://mp.weixin.qq.com/...
 
 1. 已接入搜索能力并统一输出结构。
 2. 已补上文章抓取与 Markdown 转换的基础版本。
-3. 接下来继续增强页面兼容性和格式保真度。
-4. 最后增加更多异常处理和测试样例。
+3. 已补上按 topic 批量沉淀 Markdown 到目录的知识库流水线。
+4. 接下来继续增强页面兼容性和格式保真度。
+5. 最后增加更多异常处理和测试样例。
 
 ## 预期输入输出
 
@@ -120,6 +129,29 @@ node scripts/search_wechat.js "人工智能" -n 5
 ```bash
 node scripts/skill-entry.js fetch "https://mp.weixin.qq.com/..."
 node scripts/fetch_wechat_article.js "https://mp.weixin.qq.com/..."
+```
+
+### 能力 3: topic 驱动的知识库搭建
+
+输入建议：
+
+- `topic`: 知识库主题
+- `limit`: 最多尝试下载的文章数，可选
+- `output_dir`: 存储根目录，可选
+
+输出建议：
+
+- 知识库目录路径
+- 成功保存的文章列表
+- 失败文章及原因
+- `search-results.json`
+- `manifest.json`
+
+命令行示例：
+
+```bash
+node scripts/skill-entry.js build-kb "AI Agent" --limit 5 --output-dir ./knowledge-base
+node scripts/build_wechat_knowledge_base.js "AI Agent" -n 5 -o ./knowledge-base
 ```
 
 ## 文档说明

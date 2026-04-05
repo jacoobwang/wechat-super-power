@@ -235,6 +235,16 @@ function stripTags(value) {
     .trim();
 }
 
+function decodeHtmlEntities(value) {
+  return String(value || '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"');
+}
+
 function extractFirstMatch(text, pattern) {
   const match = text.match(pattern);
   return match ? match[1] : '';
@@ -246,6 +256,7 @@ function parseArticle(itemHtml) {
     if (!titleAnchorMatch) return null;
 
     let url = titleAnchorMatch[1] || '';
+    url = decodeHtmlEntities(url);
     if (url.startsWith('/')) {
       url = `https://weixin.sogou.com${url}`;
     }

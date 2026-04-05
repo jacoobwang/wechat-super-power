@@ -16,7 +16,7 @@ description: 当用户需要搜索微信公众号文章列表，或输入文章�
 
 ### 1. Search Article List
 
-当用户提供关键词时，调用 `search_whatch.js` 获取文章列表，并返回适合后续选择的结构化结果。
+当用户提供关键词时，调用 `search_wechat.js` 获取文章列表，并返回适合后续选择的结构化结果。
 
 推荐输出字段：
 
@@ -57,7 +57,8 @@ description: 当用户需要搜索微信公众号文章列表，或输入文章�
 
 ## Implementation Notes
 
-- `search_whatch.js` 是搜索能力的外部依赖，需要先确认其命令行参数和输出格式
+- `search_wechat.js` 提供搜索能力，输出需要标准化
+- `fetch_wechat_article.js` 负责抓取文章内容并转换为 Markdown
 - 下载文章时需要处理正文节点、图片、引用、分隔符、换行和异常内容
 - Markdown 输出要尽量保留标题层级、段落、列表和图片链接
 - 如果页面无法访问、正文为空或链接无效，需要返回明确错误信息

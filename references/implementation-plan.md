@@ -30,10 +30,9 @@
 ├── references/
 │   └── implementation-plan.md
 └── scripts/
-    ├── search_whatch.js          # 既有搜索脚本，后续接入
+    ├── search_wechat.js          # 搜索脚本
     ├── skill-entry.js            # 后续统一入口
-    ├── article-fetcher.js        # 后续文章抓取
-    ├── markdown-converter.js     # 后续 Markdown 转换
+    ├── fetch_wechat_article.js   # 文章抓取与 Markdown 转换
     └── utils/
         ├── parser.js
         ├── normalizer.js
@@ -42,8 +41,8 @@
 
 说明：
 
-- `search_whatch.js` 视为已存在或外部提供的依赖
-- 其余文件是建议拆分，不要求必须完全一致
+- 当前已经采用轻量脚本方式实现搜索和抓取
+- 后续如果复杂度继续增加，可以再拆出 `utils/`
 
 ## 4. Functional Design
 
@@ -58,7 +57,7 @@
 #### 处理流程
 
 1. 校验输入参数
-2. 调用 `search_whatch.js`
+2. 调用 `search_wechat.js`
 3. 读取脚本输出
 4. 将输出转换为统一的数据结构
 5. 返回文章列表
@@ -83,7 +82,7 @@
 
 #### 风险点
 
-- `search_whatch.js` 的输出可能不是标准 JSON
+- `search_wechat.js` 的输出可能因为页面结构变化而字段缺失
 - 搜索结果字段可能缺失或命名不一致
 - 结果可能包含广告、失效链接或重复项
 
@@ -138,26 +137,18 @@
 - 解析命令参数或调用参数
 - 根据模式路由到搜索或下载能力
 
-### `search_whatch.js`
+### `search_wechat.js`
 
 - 负责原始搜索
 - 不建议在 skill 入口重复实现搜索逻辑
 - 应通过适配层做结果标准化
 
-### `article-fetcher.js`
+### `fetch_wechat_article.js`
 
 - 请求文章页面
-- 负责 HTML 获取和基础异常处理
-
-### `parser.js`
-
-- 从 HTML 中提取正文和元数据
-- 处理微信文章常见 DOM 结构
-
-### `markdown-converter.js`
-
-- 将解析后的内容块转换为 Markdown
-- 尽量保证输出稳定和结构清晰
+- 兼容处理搜狗跳转链接
+- 提取正文和元数据
+- 将 HTML 转换为 Markdown
 
 ### `normalizer.js`
 
@@ -234,12 +225,11 @@
 
 当前最需要确认的是：
 
-1. `search_whatch.js` 的真实文件名是否就是这个名字
-2. 该脚本的输入方式是 CLI 参数、stdin，还是函数调用
-3. 输出是否为 JSON
-4. 下载文章时是否允许依赖无头浏览器，还是只允许纯 HTTP 抓取
-5. Markdown 结果是否需要同时落盘为文件
+1. 是否需要继续支持搜狗中转链接自动解析真实地址
+2. 下载文章时是否允许依赖无头浏览器，还是保持纯 HTTP 抓取
+3. Markdown 结果是否需要同时落盘为文件
+4. 是否需要保留更多富文本样式，例如表格、代码块和音视频卡片
 
 ## 9. Recommended Next Step
 
-下一步最适合先做的是接入并验证 `search_whatch.js` 的输入输出协议，因为这会直接决定 skill 的入口设计和数据结构。
+下一步最适合先做的是增强文章页面兼容性，尤其是正文块提取、图片保留和访问受限场景的错误提示。

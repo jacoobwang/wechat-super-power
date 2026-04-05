@@ -30,6 +30,10 @@ function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
 }
 
+function writeJson(filePath, payload) {
+  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf-8');
+}
+
 function formatNow() {
   const now = new Date();
   const year = now.getFullYear();
@@ -61,8 +65,8 @@ function buildMarkdownDocument(article, topic) {
   return `${header.join('\n')}${article.markdown.trim()}\n`;
 }
 
-function writeJson(filePath, payload) {
-  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf-8');
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function buildWechatKnowledgeBase(topic, options = {}) {
@@ -72,6 +76,7 @@ async function buildWechatKnowledgeBase(topic, options = {}) {
   }
 
   const limit = Math.min(Math.max(parseInt(options.limit, 10) || 5, 1), 50);
+  const delayMs = Math.max(parseInt(options.delayMs, 10) || 3000, 0);
   const outputRoot = path.resolve(options.outputDir || path.join(process.cwd(), 'knowledge-base'));
   const topicDirName = sanitizePathSegment(options.topicDirName || slugify(normalizedTopic, 'topic'));
   const topicDir = path.join(outputRoot, topicDirName);
@@ -113,6 +118,10 @@ async function buildWechatKnowledgeBase(topic, options = {}) {
         error: error.message
       });
     }
+
+    if (delayMs > 0 && index < searchResult.items.length - 1) {
+      await sleep(delayMs);
+    }
   }
 
   const manifest = {
@@ -120,6 +129,7 @@ async function buildWechatKnowledgeBase(topic, options = {}) {
     topic: normalizedTopic,
     output_dir: topicDir,
     requested_limit: limit,
+    delay_ms: delayMs,
     searched_count: searchResult.total,
     saved_count: savedArticles.length,
     failed_count: failedArticles.length,
@@ -136,12 +146,16 @@ function parseCliArgs(args) {
   let limit = 5;
   let outputDir = '';
   let topicDirName = '';
+  let delayMs = 3000;
 
   for (let i = 0; i < args.length; i += 1) {
     const value = args[i];
 
     if (value === '--limit' || value === '-n') {
       limit = parseInt(args[i + 1], 10) || 5;
+      i += 1;
+    } else if (value === '--delay' || value === '--delay-ms') {
+      delayMs = parseInt(args[i + 1], 10) || 3000;
       i += 1;
     } else if (value === '--output-dir' || value === '-o') {
       outputDir = args[i + 1] || '';
@@ -154,11 +168,11 @@ function parseCliArgs(args) {
     }
   }
 
-  return { topic, limit, outputDir, topicDirName };
+  return { topic, limit, outputDir, topicDirName, delayMs };
 }
 
 async function main() {
-  const { topic, limit, outputDir, topicDirName } = parseCliArgs(process.argv.slice(2));
+  const { topic, limit, outputDir, topicDirName, delayMs } = parseCliArgs(process.argv.slice(2));
 
   if (!topic) {
     console.log(`
@@ -169,17 +183,15 @@ async function main() {
 
 选项:
   -n, --limit <数量>         搜索并尝试下载的文章数（默认5，最大50）
+  --delay, --delay-ms <毫秒> 每篇文章之间的抓取间隔（默认3000）
   -o, --output-dir <目录>    知识库存储根目录（默认 ./knowledge-base）
   --topic-dir <目录名>       topic 子目录名（默认由 topic 自动生成）
-
-示例:
-  node scripts/build_wechat_knowledge_base.js "AI Agent" -n 5 -o ./docs
 `);
     process.exit(0);
   }
 
   try {
-    const result = await buildWechatKnowledgeBase(topic, { limit, outputDir, topicDirName });
+    const result = await buildWechatKnowledgeBase(topic, { limit, outputDir, topicDirName, delayMs });
     console.log(JSON.stringify(result, null, 2));
   } catch (error) {
     console.error(`知识库搭建失败: ${error.message}`);
@@ -188,7 +200,9 @@ async function main() {
 }
 
 module.exports = {
-  buildWechatKnowledgeBase
+  buildWechatKnowledgeBase,
+  sanitizePathSegment,
+  slugify
 };
 
 if (require.main === module) {

@@ -2,7 +2,7 @@
 
 const { searchWechatArticles, normalizeSearchResult } = require('./search_wechat');
 const { fetchWechatArticle } = require('./fetch_wechat_article');
-const { buildWechatKnowledgeBase } = require('./build_wechat_knowledge_base');
+const { buildKnowledgeBase } = require('./build_knowledge_base');
 const { saveWebArticles } = require('./save_web_articles');
 
 function parseArgs(argv) {
@@ -81,7 +81,7 @@ async function main() {
       process.exit(1);
     }
 
-    const result = await buildWechatKnowledgeBase(topic, { limit, outputDir, topicDirName, delayMs });
+    const result = await buildKnowledgeBase(topic, { limit, outputDir, topicDirName, delayMs });
     console.log(JSON.stringify(result, null, 2));
     return;
   }

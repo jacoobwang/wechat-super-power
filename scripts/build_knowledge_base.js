@@ -69,7 +69,7 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function buildWechatKnowledgeBase(topic, options = {}) {
+async function buildKnowledgeBase(topic, options = {}) {
   const normalizedTopic = String(topic || '').trim();
   if (!normalizedTopic) {
     throw new Error('topic is required');
@@ -176,10 +176,10 @@ async function main() {
 
   if (!topic) {
     console.log(`
-微信公众号知识库搭建工具
+文章知识库搭建工具
 
 用法:
-  node scripts/build_wechat_knowledge_base.js <topic> [选项]
+  node scripts/build_knowledge_base.js <topic> [选项]
 
 选项:
   -n, --limit <数量>         搜索并尝试下载的文章数（默认5，最大50）
@@ -191,7 +191,7 @@ async function main() {
   }
 
   try {
-    const result = await buildWechatKnowledgeBase(topic, { limit, outputDir, topicDirName, delayMs });
+    const result = await buildKnowledgeBase(topic, { limit, outputDir, topicDirName, delayMs });
     console.log(JSON.stringify(result, null, 2));
   } catch (error) {
     console.error(`知识库搭建失败: ${error.message}`);
@@ -200,7 +200,7 @@ async function main() {
 }
 
 module.exports = {
-  buildWechatKnowledgeBase,
+  buildKnowledgeBase,
   sanitizePathSegment,
   slugify
 };

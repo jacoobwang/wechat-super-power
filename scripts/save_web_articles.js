@@ -7,7 +7,7 @@ const path = require('path');
 const zlib = require('zlib');
 
 const { fetchWechatArticle, htmlToMarkdown } = require('./fetch_wechat_article');
-const { sanitizePathSegment, slugify } = require('./build_wechat_knowledge_base');
+const { sanitizePathSegment, slugify } = require('./build_knowledge_base');
 
 const USER_AGENTS = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',

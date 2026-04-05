@@ -204,7 +204,7 @@ node scripts/skill-entry.js save-articles "AI Agent" "https://mp.weixin.qq.com/s
 
 - 搜索能力由 `scripts/search_wechat.js` 提供，统一入口是 `scripts/skill-entry.js`
 - 抓取能力由 `scripts/fetch_wechat_article.js` 提供，统一入口也是 `scripts/skill-entry.js`
-- 知识库构建能力由 `scripts/build_wechat_knowledge_base.js` 提供，统一入口也是 `scripts/skill-entry.js`
+- 知识库构建能力由 `scripts/build_knowledge_base.js` 提供，统一入口也是 `scripts/skill-entry.js`
 - 文章入库能力由 `scripts/save_web_articles.js` 提供，微信文章内部调用 `fetch_wechat_article`
 - 优先调用统一入口，除非你是在调试底层脚本
 - 微信文章抓取受访问限制影响较大，出现验证码、反爬或权限限制时应直接返回错误
@@ -215,7 +215,7 @@ node scripts/skill-entry.js save-articles "AI Agent" "https://mp.weixin.qq.com/s
 - `scripts/skill-entry.js`: 统一入口
 - `scripts/search_wechat.js`: 搜索实现
 - `scripts/fetch_wechat_article.js`: 抓取与 Markdown 转换实现
-- `scripts/build_wechat_knowledge_base.js`: topic 搜索、串行抓取、写入知识库目录
+- `scripts/build_knowledge_base.js`: topic 搜索、串行抓取、写入知识库目录
 - `scripts/save_web_articles.js`: 将网页文章抓取并写入 Markdown，兼容微信和常见博客页面
 - `references/implementation-plan.md`: 更详细的实现方案
 

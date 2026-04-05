@@ -30,7 +30,7 @@
 │   └── implementation-plan.md
 └── scripts/
     ├── .gitkeep
-    ├── build_wechat_knowledge_base.js
+    ├── build_knowledge_base.js
     ├── fetch_wechat_article.js
     ├── save_web_articles.js
     ├── search_wechat.js
@@ -160,7 +160,7 @@ node scripts/fetch_wechat_article.js "https://mp.weixin.qq.com/..."
 
 ```bash
 node scripts/skill-entry.js build-kb "AI Agent" --limit 5 --delay 3000 --output-dir ./knowledge-base
-node scripts/build_wechat_knowledge_base.js "AI Agent" -n 5 --delay 3000 -o ./knowledge-base
+node scripts/build_knowledge_base.js "AI Agent" -n 5 --delay 3000 -o ./knowledge-base
 ```
 
 ### 能力 4: 直接使用文章链接入库

@@ -34,6 +34,46 @@
     └── skill-entry.js
 ```
 
+## 在 OpenClaw 中使用
+
+如果 OpenClaw 支持目录式 skills，推荐把这个目录安装到以下任一位置：
+
+1. 用户级目录：`~/.agents/skills/wechat-super-power`
+2. 工作区目录：`<workspace>/.agents/skills/wechat-super-power`
+
+示例：
+
+```bash
+mkdir -p ~/.agents/skills
+cp -R /Users/link/App/wechat-super-power ~/.agents/skills/wechat-super-power
+```
+
+或者：
+
+```bash
+mkdir -p /your/workspace/.agents/skills
+cp -R /Users/link/App/wechat-super-power /your/workspace/.agents/skills/wechat-super-power
+```
+
+安装后，OpenClaw 侧应能发现名为 `$wechat-super-power` 的 skill。
+
+推荐调用方式：
+
+```text
+使用 $wechat-super-power 搜索“人工智能”相关文章，返回 5 条结果
+```
+
+```text
+使用 $wechat-super-power 抓取这个微信文章链接并输出 markdown：
+https://mp.weixin.qq.com/...
+```
+
+说明：
+
+- 真正决定 skill 行为的是 `SKILL.md`
+- `agents/openai.yaml` 主要是界面元数据，不一定被 OpenClaw 使用
+- 本项目已经把 `SKILL.md` 调整为操作型说明，agent 看到后应直接执行脚本命令
+
 ## 建议的后续开发顺序
 
 1. 已接入搜索能力并统一输出结构。

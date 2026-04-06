@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2
+
+- Removed unsupported `history.yaml`, `playbook.md`, and `persona` references from the writing guide
+- Reduced capability-mismatch warnings during skill review and installation
+
 ## 0.1.1
 
 - Removed local `--urls-file` ingestion path to avoid marketplace exfiltration warnings

@@ -80,6 +80,12 @@ node scripts/skill-entry.js save-articles "<topic>" "<链接1>" "<链接2>" --ou
 
 [frameworks.md](/Users/link/App/wechat-super-power/references/frameworks.md)
 
+### Step 6 Prompt
+
+第 6 步“写作”参考：
+
+[writing-guide.md](/Users/link/App/wechat-super-power/references/writing-guide.md)
+
 ## 项目结构
 
 ```text
@@ -90,7 +96,8 @@ node scripts/skill-entry.js save-articles "<topic>" "<链接1>" "<链接2>" --ou
 │   └── openai.yaml
 ├── references/
 │   ├── hotspot-analysis-prompt.md
-│   └── frameworks.md
+│   ├── frameworks.md
+│   └── writing-guide.md
 └── scripts/
     ├── build_knowledge_base.js
     ├── fetch_wechat_article.js
@@ -108,6 +115,7 @@ node scripts/skill-entry.js save-articles "<topic>" "<链接1>" "<链接2>" --ou
 - [fetch_wechat_article.js](/Users/link/App/wechat-super-power/scripts/fetch_wechat_article.js)：文章抓取与 Markdown 转换
 - [hotspot-analysis-prompt.md](/Users/link/App/wechat-super-power/references/hotspot-analysis-prompt.md)：Step 4 爆点分析 prompt
 - [frameworks.md](/Users/link/App/wechat-super-power/references/frameworks.md)：Step 5 框架参考
+- [writing-guide.md](/Users/link/App/wechat-super-power/references/writing-guide.md)：Step 6 写作规范与 prompt
 
 ## 使用建议
 
@@ -118,6 +126,6 @@ node scripts/skill-entry.js save-articles "<topic>" "<链接1>" "<链接2>" --ou
 3. 搭建知识库
 4. 读取知识库做爆点分析
 5. 基于分析结果输出框架
-6. 进入写作
+6. 读取 [writing-guide.md](/Users/link/App/wechat-super-power/references/writing-guide.md) 后进入写作
 
 如果用户只要局部能力，也可以只执行对应步骤，但应尽量复用前一步的结果，而不是重新起一套流程。

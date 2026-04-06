@@ -165,10 +165,12 @@ node scripts/skill-entry.js build-kb "<topic>" --limit <数量> --delay 3000 --o
 这一阶段由 agent 基于 Step 4 和 Step 5 继续完成。
 
 执行方式：
+- 读取 [writing-guide.md](references/writing-guide.md)
 - 使用 topic、知识库内容、爆点分析结论、文章框架
 - 直接输出文章初稿或按用户要求输出局部内容
 
 写作要求：
+- 优先遵守 [writing-guide.md](references/writing-guide.md) 中的写作规范
 - 不要脱离知识库证据胡乱发挥
 - 保留内容策划阶段确定的冲突点和传播点
 - 文章应能自然承接前面框架，而不是重新起炉灶
@@ -209,7 +211,8 @@ node scripts/skill-entry.js save-articles "<topic>" "<链接1>" "<链接2>" --ou
 3. Step 1-3 用脚本，Step 4-6 用 prompt 和 agent 推理。
 4. 做 Step 4 时，必须优先读取知识库内容，不要脱离资料直接分析。
 5. 做 Step 5 和 Step 6 时，必须继承 Step 4 的结论，不要与上一步脱节。
-6. 如果知识库为空或文章过少，应明确说明，不要假装分析充分。
+6. 做 Step 6 时，必须先读取 [writing-guide.md](references/writing-guide.md)，再开始写作。
+7. 如果知识库为空或文章过少，应明确说明，不要假装分析充分。
 
 ---
 
@@ -222,6 +225,7 @@ node scripts/skill-entry.js save-articles "<topic>" "<链接1>" "<链接2>" --ou
 - `scripts/save_web_articles.js`：将文章链接直接写入知识库
 - `references/hotspot-analysis-prompt.md`：Step 4 爆点分析 prompt
 - `references/frameworks.md`：Step 5 框架生成参考
+- `references/writing-guide.md`：Step 6 写作规范与 prompt
 
 ---
 

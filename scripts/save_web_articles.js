@@ -67,14 +67,6 @@ function parseUrls(value) {
     .filter(Boolean);
 }
 
-function readUrlsFile(filePath) {
-  const content = fs.readFileSync(filePath, 'utf-8');
-  return content
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
-
 function uniqueUrls(urls) {
   return Array.from(new Set(urls));
 }
@@ -401,7 +393,6 @@ function parseCliArgs(args) {
   let outputDir = '';
   let topicDirName = '';
   let urls = [];
-  let urlsFile = '';
 
   for (let i = 0; i < args.length; i += 1) {
     const value = args[i];
@@ -415,18 +406,11 @@ function parseCliArgs(args) {
     } else if (value === '--urls') {
       urls.push(...parseUrls(args[i + 1] || ''));
       i += 1;
-    } else if (value === '--urls-file') {
-      urlsFile = args[i + 1] || '';
-      i += 1;
     } else if (!value.startsWith('-') && !topic) {
       topic = value;
     } else if (!value.startsWith('-')) {
       urls.push(value);
     }
-  }
-
-  if (urlsFile) {
-    urls.push(...readUrlsFile(path.resolve(urlsFile)));
   }
 
   return {
@@ -451,7 +435,6 @@ async function main() {
   -o, --output-dir <目录>    知识库存储根目录（默认 ./knowledge-base）
   --topic-dir <目录名>       topic 子目录名（默认由 topic 自动生成）
   --urls <链接列表>          逗号分隔的网址列表
-  --urls-file <文件>         每行一个网址
 
 说明:
   微信文章会走 fetch_wechat_article 专用抓取。

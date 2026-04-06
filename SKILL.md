@@ -1,254 +1,252 @@
 ---
 name: wechat-super-power
-description: 当用户需要搜索微信公众号文章列表，或输入文章链接并提取正文转换为 Markdown 时使用。适用于“按关键词搜索文章”“返回文章候选列表”“下载文章内容”“把文章整理成 markdown 并入库”等场景。
+description: |
+  内容全流程助手：topic → 相关文章列表 → 知识库 → 爆点分析 → 框架 → 写作。
+  适用于围绕公众号/微信文章场景，从选题出发完成资料抓取、知识沉淀、观点提炼、
+  框架组织与写作推进。
+  触发关键词：公众号、微信文章、推文、选题、知识库、爆点分析、文章框架、写作。
+  不应被纯 blog、邮件、PPT、短视频脚本等泛内容任务触发，除非用户明确要走本文档定义的内容工作流。
 ---
 
 # Wechat Super Power
 
-## Overview
+## 行为声明
 
-这个 skill 用于处理文章搜索、抓取与入库的四类任务，并且应直接通过本目录下的脚本执行：
+**角色**：用户的内容研究与写作流程 Agent。
 
-1. 调用既有搜索脚本获取文章列表
-2. 输入文章链接并输出结构化 Markdown
-3. 输入 topic，先搜索候选文章，再自动串行下载正文并生成知识库目录
-4. 输入文章链接，将文章 Markdown 落盘到目录
+**默认模式**：
+- 默认按 6 步主流程推进，不把任务拆成零散回答。
+- 能用脚本完成的步骤直接执行，不停在“建议”层。
+- 不能用脚本完成的步骤，由 agent 基于已有知识库内容继续分析与产出。
 
-## When To Use
+**范围边界**：
+- 当前仓库已经实现的“可执行能力”主要覆盖 Step 1-3。
+- Step 4-6 主要依赖 prompt、知识库内容和 agent 推理，不依赖额外脚本。
 
-在这些场景下应该使用本 skill：
+**降级原则**：
+- 搜索失败：明确报错，不伪造文章列表。
+- 单篇抓取失败：保留失败原因，继续处理其他文章。
+- 爆点分析阶段如果知识库内容不足：明确指出证据不足，再给出保守分析。
+- 框架与写作阶段如果上游素材质量不足：先说明不足，再基于已有内容继续推进。
 
-- 用户要按关键词搜索微信公众号文章
-- 用户要先拿到文章候选列表，再决定抓哪一篇
-- 用户给了微信文章链接，希望提取正文并转成 Markdown
-- 用户要围绕某个 topic 搭建文档知识库
-- 用户已经拿到文章链接，希望批量入库
-- 用户提到“微信公众号”“微信文章”“mp.weixin.qq.com”“搜狗微信搜索”“转 markdown”
+**完成协议**：
+- `DONE`：已经完成当前请求要求的步骤，且输出可直接进入下一步。
+- `DONE_WITH_CONCERNS`：已完成，但存在资料不足、抓取失败、反爬限制等问题。
+- `BLOCKED`：关键输入缺失或知识库为空，无法继续。
 
-## How To Execute
+**路径约定**：
+- `{skill_dir}` 指当前 SKILL.md 所在目录。
+- topic 对应的知识库目录默认位于 `./knowledge-base/<topic-slug>/`。
 
-始终在 skill 根目录执行下面的命令。
+---
 
-### Search
+## 主管道（Step 1-6）
 
-当用户要搜索文章列表时，运行：
+### Step 1: 用户输入 topic
+
+目标：
+- 明确本轮内容生产围绕什么主题展开。
+
+执行原则：
+- 如果用户已经提供 topic，直接进入 Step 2。
+- 如果用户没有提供 topic，但语义中存在明确主题，就把该主题作为 topic。
+- 如果完全没有 topic，先向用户确认 topic，再继续。
+
+输出：
+- 一个明确的 `topic`
+
+---
+
+### Step 2: 抓取相关文章列表
+
+执行方式：
 
 ```bash
-node scripts/skill-entry.js search "<关键词>" --limit <数量>
+node scripts/skill-entry.js search "<topic>" --limit <数量>
 ```
 
-示例：
+默认数量：
+- 未指定时默认取 3 条
 
-```bash
-node scripts/skill-entry.js search "人工智能" --limit 5
-```
+这一阶段应做什么：
+- 围绕 topic 搜索相关文章列表
+- 返回候选文章的标题、摘要、来源、发布时间、链接
+- 为 Step 3 做输入准备
 
-### Fetch
+失败处理：
+- 若搜索失败，直接说明失败原因，不伪造候选列表
 
-当用户要抓取文章正文并转 Markdown 时，运行：
+输出：
+- 结构化文章候选列表
 
-```bash
-node scripts/skill-entry.js fetch "<文章链接>"
-```
+---
 
-示例：
+### Step 3: 知识库沉淀
 
-```bash
-node scripts/skill-entry.js fetch "https://mp.weixin.qq.com/..."
-```
-
-### Build Knowledge Base
-
-当用户要根据 topic 搭建知识库并自动下载文章时，运行：
+执行方式：
 
 ```bash
 node scripts/skill-entry.js build-kb "<topic>" --limit <数量> --delay 3000 --output-dir <目录>
 ```
 
-示例：
+这一阶段应做什么：
+- 把候选文章抓取为 Markdown
+- 将成功文章写入 topic 对应知识库目录
+- 保留成功/失败结果
+
+这一阶段完成后，agent 应知道：
+- 知识库目录位置
+- 哪些文章抓取成功
+- 哪些文章失败以及原因
+
+输出：
+- 知识库目录
+- 成功保存的文章列表
+- 失败文章列表
+
+---
+
+### Step 4: 爆点分析
+
+这一阶段**不调用脚本**。
+
+执行方式：
+- 读取 topic 对应知识库目录下的 Markdown 文章
+- 使用 [hotspot-analysis-prompt.md](references/hotspot-analysis-prompt.md) 作为分析提示词
+- 基于知识库内容提炼：
+  - 选题价值
+  - 冲突点
+  - 传播点
+  - 可写角度
+  - 证据来源
+
+执行要求：
+- 不要复述文章
+- 结论优先
+- 每个判断尽量回到具体文章内容或案例
+- 如果知识库只有少量文章，要明确说明结论的置信度有限
+
+输出结构建议：
+- `选题价值`
+- `冲突点`
+- `传播点`
+- `可写角度`
+- `证据来源`
+
+---
+
+### Step 5: 输出文章框架
+
+这一阶段**不调用业务脚本**，由 agent 基于 Step 4 的分析结果继续推进。
+
+执行方式：
+- 读取 [frameworks.md](references/frameworks.md)
+- 根据 topic、爆点分析结果、目标读者判断最合适的框架
+- 输出一套明确可写的文章结构
+
+框架输出至少应包含：
+- 开头策略
+- 文章主线
+- 段落安排
+- 每段要写什么
+- 哪些证据应放在哪一段
+
+默认要求：
+- 不只给框架类型名，要给可执行的大纲
+- 如有必要，可给 2-3 套候选框架供用户选择
+
+输出：
+- 一套或多套文章框架
+
+---
+
+### Step 6: 写作
+
+这一阶段由 agent 基于 Step 4 和 Step 5 继续完成。
+
+执行方式：
+- 使用 topic、知识库内容、爆点分析结论、文章框架
+- 直接输出文章初稿或按用户要求输出局部内容
+
+写作要求：
+- 不要脱离知识库证据胡乱发挥
+- 保留内容策划阶段确定的冲突点和传播点
+- 文章应能自然承接前面框架，而不是重新起炉灶
+
+输出：
+- 文章初稿 / 局部段落 / 标题方案 / 开头方案
+
+---
+
+## 辅助能力
+
+### 单篇抓取
+
+当用户已经给出具体文章链接，而不是让你先搜再沉淀时，运行：
 
 ```bash
-node scripts/skill-entry.js build-kb "AI Agent" --limit 5 --delay 3000 --output-dir "./knowledge-base"
+node scripts/skill-entry.js fetch "<文章链接>"
 ```
 
-### Save Articles
+适用场景：
+- 用户给出 `mp.weixin.qq.com/...`
+- 用户给出具体网页文章链接并要求提取正文
 
-当用户已经拿到文章链接并要保存到知识库时，运行：
+### 直接批量入库
+
+当用户已经有一批文章链接，希望直接写入知识库时，运行：
 
 ```bash
 node scripts/skill-entry.js save-articles "<topic>" "<链接1>" "<链接2>" --output-dir <目录>
 ```
 
-示例：
+---
 
-```bash
-node scripts/skill-entry.js save-articles "AI Agent" "https://mp.weixin.qq.com/s/xxx" --output-dir "./knowledge-base"
-```
+## Agent 执行规范
 
-## Output Contract
+1. 如果用户请求是完整内容流程，优先按 Step 1-6 顺序推进，而不是只执行局部步骤。
+2. 如果用户只请求其中一步，就只执行那一步以及必要前置步骤。
+3. Step 1-3 用脚本，Step 4-6 用 prompt 和 agent 推理。
+4. 做 Step 4 时，必须优先读取知识库内容，不要脱离资料直接分析。
+5. 做 Step 5 和 Step 6 时，必须继承 Step 4 的结论，不要与上一步脱节。
+6. 如果知识库为空或文章过少，应明确说明，不要假装分析充分。
 
-### Search Output
+---
 
-搜索结果输出为 JSON，对外重点使用这些字段：
+## 文件地图
 
-- `title`
-- `summary`
-- `account_name`
-- `publish_time`
-- `url`
+- `scripts/skill-entry.js`：统一 CLI 入口
+- `scripts/search_wechat.js`：相关文章搜索
+- `scripts/fetch_wechat_article.js`：文章抓取与 Markdown 转换
+- `scripts/build_knowledge_base.js`：围绕 topic 搜索并沉淀知识库
+- `scripts/save_web_articles.js`：将文章链接直接写入知识库
+- `references/hotspot-analysis-prompt.md`：Step 4 爆点分析 prompt
+- `references/frameworks.md`：Step 5 框架生成参考
 
-实际顶层结构：
+---
 
-```json
-{
-  "action": "search",
-  "keyword": "人工智能",
-  "total": 5,
-  "items": []
-}
-```
+## 快速响应模式
 
-### Fetch Output
+### 用户要“做完整流程”
 
-抓取结果输出为 JSON，对外重点使用这些字段：
+按顺序推进：
+1. 明确 topic
+2. 搜索文章列表
+3. 搭建知识库
+4. 做爆点分析
+5. 输出框架
+6. 写作
 
-- `title`
-- `author`
-- `publish_time`
-- `source_url`
-- `markdown`
+### 用户只要“爆点分析”
 
-实际顶层结构：
+不要调用新脚本，直接：
+1. 找到知识库目录
+2. 读取 Markdown 文章
+3. 使用 [hotspot-analysis-prompt.md](references/hotspot-analysis-prompt.md)
+4. 输出 `选题价值 / 冲突点 / 传播点 / 可写角度 / 证据来源`
 
-```json
-{
-  "action": "fetch",
-  "title": "文章标题",
-  "author": "公众号或作者",
-  "publish_time": "2026-04-05 10:00:00",
-  "source_url": "https://mp.weixin.qq.com/...",
-  "markdown": "# 标题\\n\\n正文"
-}
-```
+### 用户只要“框架”
 
-### Build Knowledge Base Output
-
-知识库搭建输出为 JSON，对外重点使用这些字段：
-
-- `topic`
-- `output_dir`
-- `saved_count`
-- `failed_count`
-- `saved_articles`
-- `failed_articles`
-
-### Save Articles Output
-
-文章入库输出为 JSON，对外重点使用这些字段：
-
-- `topic`
-- `output_dir`
-- `saved_count`
-- `failed_count`
-- `saved_articles`
-- `failed_articles`
-
-## Workflow
-
-### 搜索流程
-
-1. 接收用户关键词和结果数量
-2. 运行 `node scripts/skill-entry.js search "<关键词>" --limit <数量>`
-3. 读取 JSON 输出
-4. 将 `items` 返回给用户，必要时保留原始 `url` 供后续抓取
-
-### 下载流程
-
-1. 接收文章链接
-2. 运行 `node scripts/skill-entry.js fetch "<文章链接>"`
-3. 读取 JSON 输出
-4. 优先返回 `title`、`author`、`publish_time`、`markdown`
-
-### 知识库搭建流程
-
-1. 接收 topic、结果数量、输出目录
-2. 运行 `node scripts/skill-entry.js build-kb "<topic>" --limit <数量> --delay 3000 --output-dir <目录>`
-3. 先搜索候选列表并写入 `search-results.json`
-4. 对每条候选结果调用 `fetch_wechat_article` 抓取正文
-5. 每篇之间暂停约 3 秒，降低反爬风险
-6. 将 Markdown 存入 topic 目录并返回结果摘要
-
-### 文章入库流程
-
-1. 接收 topic、一个或多个文章链接、输出目录
-2. 运行 `node scripts/skill-entry.js save-articles "<topic>" "<链接1>" "<链接2>" --output-dir <目录>`
-3. 微信文章通过 `fetch_wechat_article` 抓取，其他网站走通用正文提取
-4. 将 Markdown 存入 topic 目录并返回结果摘要
-
-## Error Handling
-
-如果命令执行失败，优先保留脚本原始错误语义。当前常见错误包括：
-
-- `缺少搜索关键词`
-- `缺少文章链接`
-- `Unsupported URL host, expected mp.weixin.qq.com or weixin.sogou.com`
-- `Sogou antispider blocked URL resolution`
-- `Article requires WeChat captcha verification`
-- `Article content was empty after Markdown conversion`
-- `知识库搭建失败: ...`
-- `文章入库失败: ...`
-
-遇到这些错误时，不要伪造正文内容，应明确告诉用户抓取失败原因。
-
-## Notes For Agent
-
-- 搜索能力由 `scripts/search_wechat.js` 提供，统一入口是 `scripts/skill-entry.js`
-- 抓取能力由 `scripts/fetch_wechat_article.js` 提供，统一入口也是 `scripts/skill-entry.js`
-- 知识库构建能力由 `scripts/build_knowledge_base.js` 提供，统一入口也是 `scripts/skill-entry.js`
-- 文章入库能力由 `scripts/save_web_articles.js` 提供，微信文章内部调用 `fetch_wechat_article`
-- 优先调用统一入口，除非你是在调试底层脚本
-- 微信文章抓取受访问限制影响较大，出现验证码、反爬或权限限制时应直接返回错误
-- Markdown 输出是基础版，目标是可读和可复制，不保证完全保真
-
-## File Map
-
-- `scripts/skill-entry.js`: 统一入口
-- `scripts/search_wechat.js`: 搜索实现
-- `scripts/fetch_wechat_article.js`: 抓取与 Markdown 转换实现
-- `scripts/build_knowledge_base.js`: topic 搜索、串行抓取、写入知识库目录
-- `scripts/save_web_articles.js`: 将网页文章抓取并写入 Markdown，兼容微信和常见博客页面
-- `references/implementation-plan.md`: 更详细的实现方案
-
-## Quick Response Pattern
-
-### 搜索类请求
-
-先运行搜索命令，再把结果按列表或 JSON 返回。
-
-### 抓取类请求
-
-先运行抓取命令，再优先返回这些字段：
-
-- `title`
-- `author`
-- `publish_time`
-- `source_url`
-- `markdown`
-
-### 知识库搭建请求
-
-先运行 `build-kb` 命令，再优先返回这些字段：
-
-- `topic`
-- `output_dir`
-- `saved_count`
-- `failed_count`
-
-### 文章入库请求
-
-先运行 `save-articles` 命令，再优先返回这些字段：
-
-- `topic`
-- `output_dir`
-- `saved_count`
-- `failed_count`
+先确认是否已有 Step 4 的分析结果：
+- 有：直接基于分析结果输出框架
+- 没有：先做 Step 4，再给框架

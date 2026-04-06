@@ -151,6 +151,50 @@ async function requestText(options) {
   };
 }
 
+function extractCookies(headers) {
+  const cookies = [];
+  const setCookieHeader = headers['set-cookie'];
+
+  if (setCookieHeader) {
+    setCookieHeader.forEach((cookie) => {
+      const cookieValue = cookie.split(';')[0];
+      if (cookieValue) cookies.push(cookieValue);
+    });
+  }
+
+  return cookies.join('; ');
+}
+
+async function getSogouCookie() {
+  try {
+    const response = await request({
+      url: 'https://v.sogou.com/v?ie=utf8&query=&p=40030600',
+      headers: {
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Encoding': 'identity',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        'User-Agent': getRandomUserAgent()
+      },
+      timeoutMs: 10000,
+      retries: 1
+    });
+
+    const cookieStr = extractCookies(response.headers);
+    const cookieObj = {};
+
+    if (cookieStr) {
+      cookieStr.split('; ').forEach((cookie) => {
+        const [key, value] = cookie.split('=');
+        if (key && value) cookieObj[key.trim()] = value.trim();
+      });
+    }
+
+    return { cookieStr: cookieStr || '', cookieObj };
+  } catch {
+    return { cookieStr: '', cookieObj: {} };
+  }
+}
+
 function extractRedirectUrlFromHtml(html) {
   const metaMatch = html.match(/<meta[^>]*http-equiv=["']refresh["'][^>]*content=["']\d+;\s*url=([^"']+)["'][^>]*>/i);
   if (metaMatch) return decodeHtmlEntities(metaMatch[1]);
@@ -158,50 +202,72 @@ function extractRedirectUrlFromHtml(html) {
   const directJsMatch =
     html.match(/location\.href\s*=\s*["']([^"']+)["']/i) ||
     html.match(/location\s*=\s*["']([^"']+)["']/i) ||
-    html.match(/window\.location(?:\.href)?\s*=\s*["']([^"']+)["']/i);
+    html.match(/window\.location(?:\.href)?\s*=\s*["']([^"']+)["']/i) ||
+    html.match(/window\.location\.replace\(\s*["']([^"']+)["']\s*\)/i);
   if (directJsMatch) return decodeHtmlEntities(directJsMatch[1]);
 
   const urlParts = [];
   for (const match of html.matchAll(/url\s*\+=\s*'([^']*)'/g)) urlParts.push(match[1]);
   for (const match of html.matchAll(/url\s*\+=\s*"([^"]*)"/g)) urlParts.push(match[1]);
   if (urlParts.length > 0) {
-    return decodeHtmlEntities(urlParts.join(''));
+    const joined = decodeHtmlEntities(urlParts.join(''));
+    if (joined.includes('mp.weixin.qq.com')) return joined;
+    return joined;
   }
 
   return '';
 }
 
 async function resolveSogouUrl(url) {
-  const response = await requestText({
-    url,
-    headers: {
-      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      'Accept-Encoding': 'identity',
-      'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-      'User-Agent': getRandomUserAgent(),
-      Referer: 'https://weixin.sogou.com/'
-    },
-    timeoutMs: 10000,
-    retries: 1
-  });
+  const { cookieObj } = await getSogouCookie();
+  const baseCookies =
+    'ABTEST=7|1716888919|v1; IPLOC=CN5101; ariaDefaultTheme=default; ariaFixed=true; ariaReadtype=1; ariaStatus=false';
+  const snuid = cookieObj.SNUID || '';
+  const cookieStr = snuid ? `${baseCookies}; SNUID=${snuid}` : baseCookies;
 
-  if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-    const location = decodeHtmlEntities(response.headers.location);
-    if (location.includes('antispider')) {
-      throw new Error('Sogou antispider blocked URL resolution');
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const response = await requestText({
+        url,
+        headers: {
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Encoding': 'identity',
+          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+          Cookie: cookieStr,
+          'User-Agent': getRandomUserAgent(),
+          Referer: 'https://weixin.sogou.com/'
+        },
+        timeoutMs: 5000,
+        retries: 0
+      });
+
+      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+        const location = decodeHtmlEntities(response.headers.location);
+        if (location.includes('antispider')) {
+          throw new Error('Sogou antispider blocked URL resolution');
+        }
+        if (location.includes('mp.weixin.qq.com')) {
+          return location;
+        }
+      }
+
+      const resolved = extractRedirectUrlFromHtml(response.text);
+      if (resolved.includes('antispider')) {
+        throw new Error('Sogou antispider blocked URL resolution');
+      }
+      if (resolved && resolved.includes('mp.weixin.qq.com')) {
+        return resolved;
+      }
+    } catch (error) {
+      if (attempt >= 2) {
+        throw error;
+      }
     }
-    return location;
+
+    await sleep(1000);
   }
 
-  const resolved = extractRedirectUrlFromHtml(response.text);
-  if (!resolved) {
-    throw new Error('Unable to resolve Sogou redirect URL');
-  }
-  if (resolved.includes('antispider')) {
-    throw new Error('Sogou antispider blocked URL resolution');
-  }
-
-  return resolved;
+  throw new Error('Unable to resolve Sogou redirect URL');
 }
 
 function normalizeWechatUrl(inputUrl) {

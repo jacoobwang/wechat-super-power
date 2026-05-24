@@ -1,5 +1,7 @@
 # Wechat Super Power
 
+[![在 Socialistic 上试用 Wechat Super Power](https://socialistic.ai/api/embed/wechat-super-power-0449df)](https://socialistic.ai/zh/skill/wechat-super-power-0449df?utm_source=github&utm_medium=issue&utm_campaign=20260524-copywriting-doctor-skills&utm_content=badge)
+
 一个面向 OpenClaw Skills 的内容全流程助手项目：
 
 `topic -> 相关文章列表 -> 知识库 -> 爆点分析 -> 框架 -> 写作`

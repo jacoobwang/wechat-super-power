@@ -4,7 +4,7 @@
 
 一个面向 OpenClaw Skills 的内容全流程助手项目：
 
-`topic -> 相关文章列表 -> 知识库 -> 爆点分析 -> 框架 -> 写作`
+`topic -> 相关文章列表 -> 知识库 -> 爆点分析 -> 框架 -> 写作 -> 配图/图文`
 
 ## 定位
 
@@ -17,10 +17,11 @@
 3. 基于知识库做爆点分析
 4. 输出文章框架
 5. 推进写作
+6. 生成首图、文内配图与图文成稿
 
 ## Onboarding Flow
 
-完整流程分为 6 步：
+完整流程分为 7 步：
 
 1. 用户输入 `topic`
 2. 抓取相关文章列表
@@ -28,11 +29,12 @@
 4. 爆点分析
 5. 输出文章框架
 6. 写作
+7. 配图与图文成稿
 
 其中：
 
 - Step 1-3 已有脚本支持
-- Step 4-6 由 agent 基于知识库内容和 prompt 继续推进
+- Step 4-7 由 agent 基于知识库内容、prompt 和 Codex 可用的图像生成能力继续推进
 
 ## 当前已实现范围
 
@@ -88,6 +90,14 @@ node scripts/skill-entry.js save-articles "<topic>" "<链接1>" "<链接2>" --ou
 
 [writing-guide.md](/Users/link/App/wechat-super-power/references/writing-guide.md)
 
+### Step 7 配图指南
+
+第 7 步“配图与图文成稿”参考：
+
+[image-guide.md](/Users/link/App/wechat-super-power/references/image-guide.md)
+
+当用户要求“配图”“图文”“首图”“封面图”或“能直接发”的成稿时，agent 应在写作后继续生成图片清单，并在 Codex 当前环境可用 `imagegen` 或图像生成工具时直接生成图片。
+
 ## 项目结构
 
 ```text
@@ -99,6 +109,7 @@ node scripts/skill-entry.js save-articles "<topic>" "<链接1>" "<链接2>" --ou
 ├── references/
 │   ├── hotspot-analysis-prompt.md
 │   ├── frameworks.md
+│   ├── image-guide.md
 │   └── writing-guide.md
 └── scripts/
     ├── build_knowledge_base.js
@@ -118,6 +129,7 @@ node scripts/skill-entry.js save-articles "<topic>" "<链接1>" "<链接2>" --ou
 - [hotspot-analysis-prompt.md](/Users/link/App/wechat-super-power/references/hotspot-analysis-prompt.md)：Step 4 爆点分析 prompt
 - [frameworks.md](/Users/link/App/wechat-super-power/references/frameworks.md)：Step 5 框架参考
 - [writing-guide.md](/Users/link/App/wechat-super-power/references/writing-guide.md)：Step 6 写作规范与 prompt
+- [image-guide.md](/Users/link/App/wechat-super-power/references/image-guide.md)：Step 7 配图策略与图像 prompt 规范
 
 ## 使用建议
 
@@ -129,5 +141,6 @@ node scripts/skill-entry.js save-articles "<topic>" "<链接1>" "<链接2>" --ou
 4. 读取知识库做爆点分析
 5. 基于分析结果输出框架
 6. 读取 [writing-guide.md](/Users/link/App/wechat-super-power/references/writing-guide.md) 后进入写作
+7. 如果用户要求图文成稿，读取 [image-guide.md](/Users/link/App/wechat-super-power/references/image-guide.md)，设计图片清单，并在 Codex 中直接生成图片
 
 如果用户只要局部能力，也可以只执行对应步骤，但应尽量复用前一步的结果，而不是重新起一套流程。

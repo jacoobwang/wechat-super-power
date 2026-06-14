@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3
+
+- Added Step 7 for image planning, image generation, and full article-with-images delivery
+- Added Codex-oriented guidance to directly use available image generation tools for cover and inline images
+- Added `references/image-guide.md` with image list, prompt, style, and quality-check rules
+
 ## 0.1.2
 
 - Removed unsupported `history.yaml`, `playbook.md`, and `persona` references from the writing guide
